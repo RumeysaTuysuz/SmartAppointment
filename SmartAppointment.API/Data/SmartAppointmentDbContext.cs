@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using SmartAppointment.API.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace SmartAppointment.API.Data
 {
@@ -8,6 +9,8 @@ namespace SmartAppointment.API.Data
 			: base(options)
 		{
 		}
+
+		public DbSet<Appointment> Appointments { get; set; } = null!;
 
 		// public DbSet<Appointment> Appointments { get; set; }
 	}
