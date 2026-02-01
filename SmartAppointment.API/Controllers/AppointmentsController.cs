@@ -15,5 +15,13 @@ namespace SmartAppointment.API.Controllers
 		{
 			_context = context;
 		}
+
+		[HttpGet]
+		public async Task<ActionResult<IEnumerable<Appointment>>> GetAppointments()
+		{
+			var appointments = await _context.Appointments.ToListAsync();
+			return Ok(appointments);
+		}
+
 	}
 }
