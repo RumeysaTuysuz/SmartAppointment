@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SmartAppointment.API.Data;
+using SmartAppointment.API.Dtos;
 using SmartAppointment.API.Models;
 
 namespace SmartAppointment.API.Controllers
@@ -25,17 +26,23 @@ namespace SmartAppointment.API.Controllers
 		}
 
 		[HttpPost]
-		public async Task<ActionResult<Appointment>> CreateAppointment(Appointment appointment)
+		public async Task<ActionResult> CreateAppointment(CreateAppointmentDto dto)
 		{
+			var appointment = new Appointment
+			{
+				FullName = dto.FullName,
+				Email = dto.Email,
+				AppointmentDate = dto.AppointmentDate,
+				Description = dto.Description
+				// CreatedAt otomatik set ediliyor
+			};
+
 			_context.Appointments.Add(appointment);
 			await _context.SaveChangesAsync();
 
-			return CreatedAtAction(
-				nameof(GetAppointments),
-				new { id = appointment.Id },
-				appointment
-			);
+			return CreatedAtAction(nameof(GetAppointments), new { id = appointment.Id }, appointment);
 		}
+
 
 
 	}
