@@ -43,6 +43,37 @@ namespace SmartAppointment.API.Controllers
 			return CreatedAtAction(nameof(GetAppointments), new { id = appointment.Id }, appointment);
 		}
 
+		[HttpPut("{id}")]
+		public async Task<IActionResult> UpdateAppointment(int id, UpdateAppointmentDto dto)
+		{
+			var appointment = await _context.Appointments.FindAsync(id);
+
+			if (appointment == null)
+				return NotFound();
+
+			appointment.FullName = dto.FullName;
+			appointment.Email = dto.Email;
+			appointment.AppointmentDate = dto.AppointmentDate;
+			appointment.Description = dto.Description;
+
+			await _context.SaveChangesAsync();
+
+			return NoContent();
+		}
+
+		[HttpDelete("{id}")]
+		public async Task<IActionResult> DeleteAppointment(int id)
+		{
+			var appointment = await _context.Appointments.FindAsync(id);
+
+			if (appointment == null)
+				return NotFound();
+
+			_context.Appointments.Remove(appointment);
+			await _context.SaveChangesAsync();
+
+			return NoContent();
+		}
 
 
 	}
