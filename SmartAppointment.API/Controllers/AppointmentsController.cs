@@ -9,6 +9,7 @@ namespace SmartAppointment.API.Controllers
 	[Route("api/[controller]")]
 	public class AppointmentsController : ControllerBase
 	{
+
 		private readonly SmartAppointmentDbContext _context;
 
 		public AppointmentsController(SmartAppointmentDbContext context)
@@ -22,6 +23,20 @@ namespace SmartAppointment.API.Controllers
 			var appointments = await _context.Appointments.ToListAsync();
 			return Ok(appointments);
 		}
+
+		[HttpPost]
+		public async Task<ActionResult<Appointment>> CreateAppointment(Appointment appointment)
+		{
+			_context.Appointments.Add(appointment);
+			await _context.SaveChangesAsync();
+
+			return CreatedAtAction(
+				nameof(GetAppointments),
+				new { id = appointment.Id },
+				appointment
+			);
+		}
+
 
 	}
 }
