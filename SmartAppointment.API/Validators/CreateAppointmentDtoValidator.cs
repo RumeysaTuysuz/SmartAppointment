@@ -13,8 +13,8 @@ namespace SmartAppointment.API.Validators
 				.MinimumLength(3);
 
 			RuleFor(x => x.Email)
-				.NotEmpty()
-				.EmailAddress();
+				.NotEmpty().WithMessage("E-mail boş olamaz")
+				.EmailAddress().WithMessage("Geçerli bir e-posta adresi değil");
 
 			RuleFor(x => x.AppointmentDate)
 				.GreaterThan(DateTime.Now);
