@@ -19,11 +19,21 @@ namespace SmartAppointment.API.Controllers
 		}
 
 		[HttpGet]
-		public async Task<ActionResult<IEnumerable<Appointment>>> GetAppointments()
+		public async Task<ActionResult<ApiResponse<IEnumerable<Appointment>>>> GetAppointments()
 		{
 			var appointments = await _context.Appointments.ToListAsync();
-			return Ok(appointments);
+
+			var response = new ApiResponse<IEnumerable<Appointment>>
+			{
+				Success = true,
+				Message = "Appointments retrieved successfully",
+				Data = appointments,
+				Errors = null
+			};
+
+			return Ok(response);
 		}
+
 
 		[HttpPost]
 		public async Task<IActionResult> CreateAppointment(CreateAppointmentDto dto)
