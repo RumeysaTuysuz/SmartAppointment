@@ -26,7 +26,7 @@ namespace SmartAppointment.API.Controllers
 		}
 
 		[HttpPost]
-		public async Task<ActionResult> CreateAppointment(CreateAppointmentDto dto)
+		public async Task<IActionResult> CreateAppointment(CreateAppointmentDto dto)
 		{
 			var appointment = new Appointment
 			{
@@ -34,14 +34,20 @@ namespace SmartAppointment.API.Controllers
 				Email = dto.Email,
 				AppointmentDate = dto.AppointmentDate,
 				Description = dto.Description
-				// CreatedAt otomatik set ediliyor
 			};
 
 			_context.Appointments.Add(appointment);
 			await _context.SaveChangesAsync();
 
-			return CreatedAtAction(nameof(GetAppointments), new { id = appointment.Id }, appointment);
+			return StatusCode(
+				StatusCodes.Status201Created,
+				ApiResponse<Appointment>.SuccessResponse(
+					appointment,
+					"Appointment created successfully"
+				)
+			);
 		}
+
 
 		[HttpPut("{id}")]
 		public async Task<IActionResult> UpdateAppointment(int id, UpdateAppointmentDto dto)

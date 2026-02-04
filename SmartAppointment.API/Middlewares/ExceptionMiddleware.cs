@@ -1,15 +1,18 @@
 ﻿using System.Net;
 using System.Text.Json;
+using SmartAppointment.API.Models;
 
 namespace SmartAppointment.API.Middlewares
 {
 	public class ExceptionMiddleware
 	{
 		private readonly RequestDelegate _next;
+		private readonly ILogger<ExceptionMiddleware> _logger;
 
-		public ExceptionMiddleware(RequestDelegate next)
+		public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
 		{
 			_next = next;
+			_logger = logger;
 		}
 
 		public async Task InvokeAsync(HttpContext context)
@@ -20,6 +23,7 @@ namespace SmartAppointment.API.Middlewares
 			}
 			catch (Exception ex)
 			{
+				_logger.LogError(ex, ex.Message);
 				await HandleExceptionAsync(context, ex);
 			}
 		}
@@ -27,15 +31,19 @@ namespace SmartAppointment.API.Middlewares
 		private static Task HandleExceptionAsync(HttpContext context, Exception exception)
 		{
 			context.Response.ContentType = "application/json";
-			context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
-			var response = new
+			var response = new ApiResponse<object>
 			{
-				statusCode = context.Response.StatusCode,
-				message = "Bir hata oluştu. Lütfen daha sonra tekrar deneyin."
+				Success = false,
+				Message = "Beklenmeyen bir hata oluştu",
+				Errors = null
 			};
 
-			return context.Response.WriteAsync(JsonSerializer.Serialize(response));
+			context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+
+			return context.Response.WriteAsync(
+				JsonSerializer.Serialize(response)
+			);
 		}
 	}
 }
