@@ -60,12 +60,22 @@ namespace SmartAppointment.API.Controllers
 
 
 		[HttpPut("{id}")]
-		public async Task<IActionResult> UpdateAppointment(int id, UpdateAppointmentDto dto)
+		public async Task<ActionResult<ApiResponse<Appointment>>> UpdateAppointment(
+	int id,
+	CreateAppointmentDto dto)
 		{
 			var appointment = await _context.Appointments.FindAsync(id);
 
 			if (appointment == null)
-				return NotFound();
+			{
+				return NotFound(new ApiResponse<Appointment>
+				{
+					Success = false,
+					Message = "Appointment not found",
+					Data = null,
+					Errors = null
+				});
+			}
 
 			appointment.FullName = dto.FullName;
 			appointment.Email = dto.Email;
@@ -74,23 +84,43 @@ namespace SmartAppointment.API.Controllers
 
 			await _context.SaveChangesAsync();
 
-			return NoContent();
+			return Ok(new ApiResponse<Appointment>
+			{
+				Success = true,
+				Message = "Appointment updated successfully",
+				Data = appointment,
+				Errors = null
+			});
 		}
 
+
 		[HttpDelete("{id}")]
-		public async Task<IActionResult> DeleteAppointment(int id)
+		public async Task<ActionResult<ApiResponse<object>>> DeleteAppointment(int id)
 		{
 			var appointment = await _context.Appointments.FindAsync(id);
 
 			if (appointment == null)
-				return NotFound();
+			{
+				return NotFound(new ApiResponse<object>
+				{
+					Success = false,
+					Message = "Appointment not found",
+					Data = null,
+					Errors = null
+				});
+			}
 
 			_context.Appointments.Remove(appointment);
 			await _context.SaveChangesAsync();
 
-			return NoContent();
+			return Ok(new ApiResponse<object>
+			{
+				Success = true,
+				Message = "Appointment deleted successfully",
+				Data = null,
+				Errors = null
+			});
 		}
-
 
 	}
 }
