@@ -6,6 +6,8 @@ using SmartAppointment.API.Data;
 using SmartAppointment.API.Middlewares;
 using SmartAppointment.API.Models;
 using SmartAppointment.API.Validators;
+using SmartAppointment.API.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +36,7 @@ builder.Services.AddControllers()
 
 			return new BadRequestObjectResult(response);
 		};
+
 	});
 
 
@@ -44,6 +47,8 @@ builder.Services.AddValidatorsFromAssemblyContaining<CreateAppointmentDtoValidat
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 
 var app = builder.Build();
 

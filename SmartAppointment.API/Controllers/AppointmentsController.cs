@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SmartAppointment.API.Data;
 using SmartAppointment.API.Dtos;
 using SmartAppointment.API.Models;
+using SmartAppointment.API.Services;
 
 namespace SmartAppointment.API.Controllers
 {
@@ -10,31 +9,28 @@ namespace SmartAppointment.API.Controllers
 	[Route("api/[controller]")]
 	public class AppointmentsController : ControllerBase
 	{
+		private readonly IAppointmentService _appointmentService;
 
-		private readonly SmartAppointmentDbContext _context;
-
-		public AppointmentsController(SmartAppointmentDbContext context)
+		public AppointmentsController(IAppointmentService appointmentService)
 		{
-			_context = context;
+			_appointmentService = appointmentService;
 		}
 
+		// GET: api/appointments
 		[HttpGet]
 		public async Task<ActionResult<ApiResponse<IEnumerable<Appointment>>>> GetAppointments()
 		{
-			var appointments = await _context.Appointments.ToListAsync();
+			var appointments = await _appointmentService.GetAllAsync();
 
-			var response = new ApiResponse<IEnumerable<Appointment>>
+			return Ok(new ApiResponse<IEnumerable<Appointment>>
 			{
 				Success = true,
 				Message = "Appointments retrieved successfully",
-				Data = appointments,
-				Errors = null
-			};
-
-			return Ok(response);
+				Data = appointments
+			});
 		}
 
-
+		// POST: api/appointments
 		[HttpPost]
 		public async Task<IActionResult> CreateAppointment(CreateAppointmentDto dto)
 		{
@@ -46,34 +42,33 @@ namespace SmartAppointment.API.Controllers
 				Description = dto.Description
 			};
 
-			_context.Appointments.Add(appointment);
-			await _context.SaveChangesAsync();
+			var created = await _appointmentService.CreateAsync(appointment);
 
 			return StatusCode(
 				StatusCodes.Status201Created,
-				ApiResponse<Appointment>.SuccessResponse(
-					appointment,
-					"Appointment created successfully"
-				)
+				new ApiResponse<Appointment>
+				{
+					Success = true,
+					Message = "Appointment created successfully",
+					Data = created
+				}
 			);
 		}
 
-
+		// PUT: api/appointments/{id}
 		[HttpPut("{id}")]
 		public async Task<ActionResult<ApiResponse<Appointment>>> UpdateAppointment(
-	int id,
-	CreateAppointmentDto dto)
+			int id,
+			CreateAppointmentDto dto)
 		{
-			var appointment = await _context.Appointments.FindAsync(id);
+			var appointment = await _appointmentService.GetByIdAsync(id);
 
 			if (appointment == null)
 			{
 				return NotFound(new ApiResponse<Appointment>
 				{
 					Success = false,
-					Message = "Appointment not found",
-					Data = null,
-					Errors = null
+					Message = "Appointment not found"
 				});
 			}
 
@@ -82,45 +77,45 @@ namespace SmartAppointment.API.Controllers
 			appointment.AppointmentDate = dto.AppointmentDate;
 			appointment.Description = dto.Description;
 
-			await _context.SaveChangesAsync();
+			var updated = await _appointmentService.UpdateAsync(appointment);
+
+			if (!updated)
+			{
+				return BadRequest(new ApiResponse<Appointment>
+				{
+					Success = false,
+					Message = "Appointment could not be updated"
+				});
+			}
 
 			return Ok(new ApiResponse<Appointment>
 			{
 				Success = true,
 				Message = "Appointment updated successfully",
-				Data = appointment,
-				Errors = null
+				Data = appointment
 			});
 		}
 
-
+		// DELETE: api/appointments/{id}
 		[HttpDelete("{id}")]
 		public async Task<ActionResult<ApiResponse<object>>> DeleteAppointment(int id)
 		{
-			var appointment = await _context.Appointments.FindAsync(id);
+			var deleted = await _appointmentService.DeleteAsync(id);
 
-			if (appointment == null)
+			if (!deleted)
 			{
 				return NotFound(new ApiResponse<object>
 				{
 					Success = false,
-					Message = "Appointment not found",
-					Data = null,
-					Errors = null
+					Message = "Appointment not found"
 				});
 			}
-
-			_context.Appointments.Remove(appointment);
-			await _context.SaveChangesAsync();
 
 			return Ok(new ApiResponse<object>
 			{
 				Success = true,
-				Message = "Appointment deleted successfully",
-				Data = null,
-				Errors = null
+				Message = "Appointment deleted successfully"
 			});
 		}
-
 	}
 }
